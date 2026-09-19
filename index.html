@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="pageTitle">陳諭柔的飲食紀錄</title>
+<title id="pageTitle">飲食紀錄</title>
 <link rel="icon" id="faviconLink" href="">
 <link rel="apple-touch-icon" id="appleTouchIcon" href="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -330,7 +330,7 @@
     <span class="tick" style="top:8px;left:8px;"></span>
     <span class="tick" style="top:8px;right:8px;"></span>
     <p class="date" id="todayLabel">—</p>
-    <p class="title">陳諭柔的飲食紀錄</p>
+    <p class="title">飲食紀錄</p>
     <div class="streak" id="streakBadge">連續 0 天</div>
   </header>
 
@@ -437,7 +437,7 @@
   <div class="view" id="view-settings">
     <div class="field">
       <label>App 名稱</label>
-      <input type="text" id="s_appname" placeholder="陳諭柔的飲食紀錄">
+      <input type="text" id="s_appname" placeholder="幫你的 App 取個名字">
     </div>
     <div class="field">
       <label>主畫面圖示 Emoji</label>
@@ -671,7 +671,7 @@
   var entries = loadJSON(STORAGE_ENTRIES, {});
   var inbody = loadJSON(STORAGE_INBODY, {});
   var goal = loadJSON(STORAGE_GOAL, null);
-  var defaultAppearance = { appName: "陳諭柔的飲食紀錄", iconEmoji: "🍽" };
+  var defaultAppearance = { appName: "飲食紀錄", iconEmoji: "🍽" };
   var appearance = loadJSON(STORAGE_APPEARANCE, defaultAppearance);
 
   // which day-cards are expanded in the 日誌 tab, keyed by date
