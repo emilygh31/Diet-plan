@@ -6,6 +6,10 @@
 <title id="pageTitle">飲食紀錄</title>
 <link rel="icon" id="faviconLink" href="">
 <link rel="apple-touch-icon" id="appleTouchIcon" href="">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#204654">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -1581,6 +1585,12 @@
   renderToday();
   renderTrend();
   renderLog();
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("service-worker.js").catch(function(){});
+    });
+  }
 
 })();
 </script>
