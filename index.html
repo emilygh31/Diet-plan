@@ -217,6 +217,23 @@
   .field-row{display:flex; gap:10px;}
   .field-row .field{flex:1;}
 
+  .checkbox-row{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--ink-soft); margin:-4px 0 13px;
+  }
+  .checkbox-row input{width:auto;}
+
+  .preset-chips{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .preset-chips:empty{display:none; margin:0;}
+  .preset-chip{
+    padding:7px 12px; border:2px solid var(--ink); border-radius:999px;
+    background:var(--card); color:var(--ink);
+    font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .preset-chip:active{transform:translate(1px,1px);}
+
   .save-btn{
     width:100%; padding:12px; border:2px solid var(--mist); border-radius:14px;
     background:var(--teal); color:var(--mist); font-size:15px; font-weight:700;
@@ -509,6 +526,10 @@
       <div class="t-row"><span>脂肪</span><b id="sumFat">0g</b></div>
     </div>
 
+    <p class="log-title">常用食物管理</p>
+    <div id="presetList"></div>
+    <p class="empty-hint" id="presetEmptyHint" style="display:none;">還沒有存任何常用食物，記錄食物時勾選「同時存成常用食物」就會出現在這裡。</p>
+
     <p class="log-title">資料備份</p>
     <div class="row2">
       <button class="add-btn" id="exportBackup">匯出備份</button>
@@ -523,6 +544,7 @@
 <div class="modal-mask" id="addFoodModal">
   <div class="modal-box">
     <h3 id="foodModalTitle">記錄食物</h3>
+    <div id="presetChips" class="preset-chips"></div>
     <div class="field">
       <label>食物名稱</label>
       <input type="text" id="f_name" placeholder="例如：雞胸+白飯">
@@ -541,6 +563,10 @@
         <input type="number" step="0.1" id="f_fat" value="0">
       </div>
     </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="f_savePreset">
+      <span>同時存成常用食物</span>
+    </label>
     <p id="f_error" style="color:#7A2C15; font-size:13px; display:none; margin:-4px 0 10px;">請至少填一項營養素，且食物名稱不能空白。</p>
     <div class="modal-actions">
       <button class="cancel" id="f_cancel">取消</button>
@@ -619,7 +645,8 @@
   var STORAGE_INBODY = "dietTracker_inbody_v1"; // { "2026-09": {date,weight,bodyfat,muscleMass} }, one record per month
   var STORAGE_GOAL = "dietTracker_goal_v1"; // { targetDate, baseline:{weight,bodyfat,muscleMass}, target:{weight,bodyfat,muscleMass} } | null
   var STORAGE_APPEARANCE = "dietTracker_appearance_v1"; // { appName, iconEmoji }
-  var ALL_STORAGE_KEYS = [STORAGE_PROFILE, STORAGE_ENTRIES, STORAGE_INBODY, STORAGE_GOAL, STORAGE_APPEARANCE];
+  var STORAGE_PRESETS = "dietTracker_foodPresets_v1"; // [ {id, name, protein, carb, fat}, ... ]
+  var ALL_STORAGE_KEYS = [STORAGE_PROFILE, STORAGE_ENTRIES, STORAGE_INBODY, STORAGE_GOAL, STORAGE_APPEARANCE, STORAGE_PRESETS];
 
   var quotes = {
     good: ["今天也穩穩吃，穩穩練。","狀態剛好，繼續維持。","這樣的節奏很好，別急。"],
@@ -681,6 +708,7 @@
   var goal = loadJSON(STORAGE_GOAL, null);
   var defaultAppearance = { appName: "飲食紀錄", iconEmoji: "🍽" };
   var appearance = loadJSON(STORAGE_APPEARANCE, defaultAppearance);
+  var presets = loadJSON(STORAGE_PRESETS, []);
 
   // which day-cards are expanded in the 日誌 tab, keyed by date
   var openLogDays = {};
@@ -764,6 +792,67 @@
     document.getElementById("s_trainfreq").value = profile.trainfreq;
     document.getElementById("s_activity").value = profile.activity;
     document.getElementById("s_deficit").value = profile.deficit;
+  }
+
+  // Quick-select food presets, managed from the food modal (save) and Settings (delete).
+  function renderPresetChips(){
+    var container = document.getElementById("presetChips");
+    container.innerHTML = "";
+    presets.forEach(function(p){
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "preset-chip";
+      chip.textContent = p.name;
+      chip.addEventListener("click", function(){
+        document.getElementById("f_name").value = p.name;
+        document.getElementById("f_protein").value = p.protein;
+        document.getElementById("f_carb").value = p.carb;
+        document.getElementById("f_fat").value = p.fat;
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function renderPresetList(){
+    var listEl = document.getElementById("presetList");
+    listEl.innerHTML = "";
+    document.getElementById("presetEmptyHint").style.display = presets.length ? "none" : "block";
+    presets.forEach(function(p){
+      var div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = "<div class='left'><span class='food'></span><span class='macro-detail'></span></div>";
+      div.querySelector(".food").textContent = p.name;
+      div.querySelector(".macro-detail").textContent = "蛋白" + round1(p.protein) + "g · 碳水" + round1(p.carb) + "g · 脂肪" + round1(p.fat) + "g";
+
+      var delBtn = document.createElement("button");
+      delBtn.className = "del";
+      delBtn.textContent = "刪除";
+      delBtn.addEventListener("click", function(){
+        presets = presets.filter(function(x){ return x.id !== p.id; });
+        saveJSON(STORAGE_PRESETS, presets);
+        renderPresetList();
+      });
+
+      var actions = document.createElement("div");
+      actions.className = "actions";
+      actions.appendChild(delBtn);
+      div.appendChild(actions);
+      listEl.appendChild(div);
+    });
+  }
+
+  // Saves (or overwrites, by name) a food preset for quick reuse later.
+  function saveAsPreset(name, protein, carb, fat){
+    var existing = presets.find(function(p){ return p.name === name; });
+    if(existing){
+      existing.protein = protein;
+      existing.carb = carb;
+      existing.fat = fat;
+    } else {
+      presets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name:name, protein:protein, carb:carb, fat:fat });
+    }
+    saveJSON(STORAGE_PRESETS, presets);
+    renderPresetList();
   }
 
   function renderTargetSummary(){
@@ -1265,6 +1354,8 @@
     document.getElementById("f_carb").value = existing ? existing.carb : "0";
     document.getElementById("f_fat").value = existing ? existing.fat : "0";
     document.getElementById("f_error").style.display = "none";
+    document.getElementById("f_savePreset").checked = false;
+    renderPresetChips();
     modal.classList.add("show");
   }
 
@@ -1282,6 +1373,9 @@
     if(!name || (p<=0 && c<=0 && f<=0)){
       document.getElementById("f_error").style.display = "block";
       return;
+    }
+    if(document.getElementById("f_savePreset").checked){
+      saveAsPreset(name, p, c, f);
     }
     var key = modalTargetDate || todayKey();
     var isToday = key === todayKey();
@@ -1483,6 +1577,7 @@
   applyAppearance();
   fillSettingsForm();
   renderTargetSummary();
+  renderPresetList();
   renderToday();
   renderTrend();
   renderLog();
