@@ -508,6 +508,13 @@
       <div class="t-row"><span>碳水</span><b id="sumCarb">0g</b></div>
       <div class="t-row"><span>脂肪</span><b id="sumFat">0g</b></div>
     </div>
+
+    <p class="log-title">資料備份</p>
+    <div class="row2">
+      <button class="add-btn" id="exportBackup">匯出備份</button>
+      <button class="add-btn" id="importBackupBtn">匯入備份</button>
+    </div>
+    <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
   </div>
 
 </div>
@@ -612,6 +619,7 @@
   var STORAGE_INBODY = "dietTracker_inbody_v1"; // { "2026-09": {date,weight,bodyfat,muscleMass} }, one record per month
   var STORAGE_GOAL = "dietTracker_goal_v1"; // { targetDate, baseline:{weight,bodyfat,muscleMass}, target:{weight,bodyfat,muscleMass} } | null
   var STORAGE_APPEARANCE = "dietTracker_appearance_v1"; // { appName, iconEmoji }
+  var ALL_STORAGE_KEYS = [STORAGE_PROFILE, STORAGE_ENTRIES, STORAGE_INBODY, STORAGE_GOAL, STORAGE_APPEARANCE];
 
   var quotes = {
     good: ["今天也穩穩吃，穩穩練。","狀態剛好，繼續維持。","這樣的節奏很好，別急。"],
@@ -1417,6 +1425,58 @@
     saveJSON(STORAGE_GOAL, goal);
     goalModal.classList.remove("show");
     renderTrend();
+  });
+
+  // Backup: export all storage to a downloadable JSON file, or import one back in.
+  document.getElementById("exportBackup").addEventListener("click", function(){
+    var payload = { exportedAt: new Date().toISOString(), data: {} };
+    ALL_STORAGE_KEYS.forEach(function(key){
+      var raw = localStorage.getItem(key);
+      if(raw !== null) payload.data[key] = JSON.parse(raw);
+    });
+    var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "diet-tracker-backup-" + todayKey() + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importBackupBtn").addEventListener("click", function(){
+    document.getElementById("importBackupFile").click();
+  });
+
+  document.getElementById("importBackupFile").addEventListener("change", function(){
+    var file = this.files[0];
+    this.value = "";
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try{
+        parsed = JSON.parse(reader.result);
+      }catch(e){
+        alert("這不是有效的備份檔案。");
+        return;
+      }
+      var hasKnownKey = parsed && typeof parsed.data === "object" &&
+        ALL_STORAGE_KEYS.some(function(key){ return key in parsed.data; });
+      if(!hasKnownKey){
+        alert("這不是有效的備份檔案。");
+        return;
+      }
+      if(!confirm("匯入將覆蓋目前所有紀錄（飲食、InBody、目標、身體設定、外觀），確定要匯入嗎？")){
+        return;
+      }
+      ALL_STORAGE_KEYS.forEach(function(key){
+        if(key in parsed.data) saveJSON(key, parsed.data[key]);
+      });
+      location.reload();
+    };
+    reader.readAsText(file);
   });
 
   // init
