@@ -28,6 +28,40 @@
     --line:rgba(22,33,30,0.12);
     --card:#FFFFFF;
   }
+  /* theme palettes — swap the accent colors only; ink/card/line stay put so text contrast is always safe */
+  :root[data-theme="lavender"]{
+    --mist:#F5F0FB;
+    --meadow:#C9F0D8;
+    --meadow-ink:#1F6B44;
+    --sky:#D8C9F5;
+    --sky-ink:#4B2E83;
+    --teal:#4A3B6B;
+    --teal-deep:#332750;
+    --coral:#E0729A;
+    --coral-ink:#8A2F52;
+  }
+  :root[data-theme="ocean"]{
+    --mist:#EAF6FA;
+    --meadow:#B8F2E6;
+    --meadow-ink:#0B6B5C;
+    --sky:#BFE3FF;
+    --sky-ink:#12507A;
+    --teal:#0B3D5C;
+    --teal-deep:#08283D;
+    --coral:#E2703E;
+    --coral-ink:#8A3818;
+  }
+  :root[data-theme="peach"]{
+    --mist:#FFF3EA;
+    --meadow:#D9F2C4;
+    --meadow-ink:#3F6B1D;
+    --sky:#FFD9C2;
+    --sky-ink:#8A431B;
+    --teal:#7A4A3A;
+    --teal-deep:#5C3527;
+    --coral:#E85D4D;
+    --coral-ink:#8A2A1E;
+  }
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -237,6 +271,18 @@
     font-size:13px; font-weight:600; cursor:pointer;
   }
   .preset-chip:active{transform:translate(1px,1px);}
+
+  .theme-swatches{ display:flex; flex-wrap:wrap; gap:8px; }
+  .theme-swatch{
+    padding:8px 14px; border:2px solid var(--ink); border-radius:999px;
+    font-size:13px; font-weight:700; cursor:pointer; color:var(--ink);
+  }
+  .theme-swatch.selected{ box-shadow:3px 3px 0 var(--ink); }
+  .theme-swatch:active{ transform:translate(1px,1px); }
+  .theme-swatch[data-theme="sand"]{ background:linear-gradient(90deg,#F7F9E1,#CAFFA6); }
+  .theme-swatch[data-theme="lavender"]{ background:linear-gradient(90deg,#F5F0FB,#D8C9F5); }
+  .theme-swatch[data-theme="ocean"]{ background:linear-gradient(90deg,#EAF6FA,#BFE3FF); }
+  .theme-swatch[data-theme="peach"]{ background:linear-gradient(90deg,#FFF3EA,#FFD9C2); }
 
   .save-btn{
     width:100%; padding:12px; border:2px solid var(--mist); border-radius:14px;
@@ -456,90 +502,131 @@
 
   <!-- SETTINGS -->
   <div class="view" id="view-settings">
-    <div class="field">
-      <label>App 名稱</label>
-      <input type="text" id="s_appname" placeholder="幫你的 App 取個名字">
-    </div>
-    <div class="field">
-      <label>主畫面圖示 Emoji</label>
-      <input type="text" id="s_iconemoji" placeholder="🍽" maxlength="8">
-    </div>
-    <button class="save-btn" id="saveAppearance" style="margin-bottom:20px;">儲存外觀設定</button>
 
-    <div class="field-row">
-      <div class="field">
-        <label>體重 (kg)</label>
-        <input type="number" step="0.1" id="s_weight">
+    <div class="day-card">
+      <div class="day-card-head">
+        <div class="d-left"><span class="d-date">外觀設定</span></div>
+        <span class="d-chevron">▾</span>
       </div>
-      <div class="field">
-        <label>身高 (cm)</label>
-        <input type="number" step="0.1" id="s_height">
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field">
-        <label>年齡</label>
-        <input type="number" id="s_age">
-      </div>
-      <div class="field">
-        <label>生理性別</label>
-        <select id="s_sex">
-          <option value="female">女</option>
-          <option value="male">男</option>
-        </select>
+      <div class="day-card-body">
+        <div class="field">
+          <label>App 名稱</label>
+          <input type="text" id="s_appname" placeholder="幫你的 App 取個名字">
+        </div>
+        <div class="field">
+          <label>主畫面圖示 Emoji</label>
+          <input type="text" id="s_iconemoji" placeholder="🍽" maxlength="8">
+        </div>
+        <div class="field">
+          <label>主題色系</label>
+          <div class="theme-swatches" id="themeSwatches">
+            <button type="button" class="theme-swatch" data-theme="sand">沙丘</button>
+            <button type="button" class="theme-swatch" data-theme="lavender">薰衣草</button>
+            <button type="button" class="theme-swatch" data-theme="ocean">海洋</button>
+            <button type="button" class="theme-swatch" data-theme="peach">蜜桃</button>
+          </div>
+        </div>
+        <button class="save-btn" id="saveAppearance">儲存外觀設定</button>
       </div>
     </div>
-    <div class="field">
-      <label>體脂率（選填，知道的話計算更準）</label>
-      <input type="number" step="0.1" id="s_bodyfat" placeholder="不知道可留空">
-    </div>
-    <div class="field">
-      <label>每週訓練頻率</label>
-      <select id="s_trainfreq">
-        <option value="2">1–2 次</option>
-        <option value="4">3–4 次</option>
-        <option value="6">5–6 次</option>
-        <option value="7">每天</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>平時活動量（不含訓練）</label>
-      <select id="s_activity">
-        <option value="1.2">久坐（多數時間坐著）</option>
-        <option value="1.375">輕度活動（常走動、站立工作）</option>
-        <option value="1.55">中度活動（勞力工作或常走動）</option>
-        <option value="1.725">高度活動（勞力型工作）</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>熱量策略</label>
-      <select id="s_deficit">
-        <option value="0">維持熱量（0%）</option>
-        <option value="0.1" selected>小赤字（-10%，建議recomp）</option>
-        <option value="0.15">中赤字（-15%）</option>
-        <option value="0.2">大赤字（-20%）</option>
-      </select>
-    </div>
-    <button class="save-btn" id="saveSettings">儲存並重新計算目標</button>
 
-    <div class="target-summary" id="targetSummary" style="display:none;">
-      <p class="t-title">目前每日目標</p>
-      <div class="t-row"><span>熱量</span><b id="sumCal">0</b></div>
-      <div class="t-row"><span>蛋白質</span><b id="sumProtein">0g</b></div>
-      <div class="t-row"><span>碳水</span><b id="sumCarb">0g</b></div>
-      <div class="t-row"><span>脂肪</span><b id="sumFat">0g</b></div>
+    <div class="day-card">
+      <div class="day-card-head">
+        <div class="d-left"><span class="d-date">身體數據與熱量策略</span></div>
+        <span class="d-chevron">▾</span>
+      </div>
+      <div class="day-card-body">
+        <div class="field-row">
+          <div class="field">
+            <label>體重 (kg)</label>
+            <input type="number" step="0.1" id="s_weight">
+          </div>
+          <div class="field">
+            <label>身高 (cm)</label>
+            <input type="number" step="0.1" id="s_height">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>年齡</label>
+            <input type="number" id="s_age">
+          </div>
+          <div class="field">
+            <label>生理性別</label>
+            <select id="s_sex">
+              <option value="female">女</option>
+              <option value="male">男</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>體脂率（選填，知道的話計算更準）</label>
+          <input type="number" step="0.1" id="s_bodyfat" placeholder="不知道可留空">
+        </div>
+        <div class="field">
+          <label>每週訓練頻率</label>
+          <select id="s_trainfreq">
+            <option value="2">1–2 次</option>
+            <option value="4">3–4 次</option>
+            <option value="6">5–6 次</option>
+            <option value="7">每天</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>平時活動量（不含訓練）</label>
+          <select id="s_activity">
+            <option value="1.2">久坐（多數時間坐著）</option>
+            <option value="1.375">輕度活動（常走動、站立工作）</option>
+            <option value="1.55">中度活動（勞力工作或常走動）</option>
+            <option value="1.725">高度活動（勞力型工作）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>熱量策略</label>
+          <select id="s_deficit">
+            <option value="0">維持熱量（0%）</option>
+            <option value="0.1" selected>小赤字（-10%，建議recomp）</option>
+            <option value="0.15">中赤字（-15%）</option>
+            <option value="0.2">大赤字（-20%）</option>
+          </select>
+        </div>
+        <button class="save-btn" id="saveSettings">儲存並重新計算目標</button>
+
+        <div class="target-summary" id="targetSummary" style="display:none;">
+          <p class="t-title">目前每日目標</p>
+          <div class="t-row"><span>熱量</span><b id="sumCal">0</b></div>
+          <div class="t-row"><span>蛋白質</span><b id="sumProtein">0g</b></div>
+          <div class="t-row"><span>碳水</span><b id="sumCarb">0g</b></div>
+          <div class="t-row"><span>脂肪</span><b id="sumFat">0g</b></div>
+        </div>
+      </div>
     </div>
 
-    <p class="log-title">常用食物管理</p>
-    <div id="presetList"></div>
-    <p class="empty-hint" id="presetEmptyHint" style="display:none;">還沒有存任何常用食物，記錄食物時勾選「同時存成常用食物」就會出現在這裡。</p>
-
-    <p class="log-title">資料備份</p>
-    <div class="row2">
-      <button class="add-btn" id="exportBackup">匯出備份</button>
-      <button class="add-btn" id="importBackupBtn">匯入備份</button>
+    <div class="day-card">
+      <div class="day-card-head">
+        <div class="d-left"><span class="d-date">常用食物管理</span></div>
+        <span class="d-chevron">▾</span>
+      </div>
+      <div class="day-card-body">
+        <div id="presetList"></div>
+        <p class="empty-hint" id="presetEmptyHint" style="display:none;">還沒有存任何常用食物，記錄食物時勾選「同時存成常用食物」就會出現在這裡。</p>
+      </div>
     </div>
-    <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
+
+    <div class="day-card">
+      <div class="day-card-head">
+        <div class="d-left"><span class="d-date">資料備份</span></div>
+        <span class="d-chevron">▾</span>
+      </div>
+      <div class="day-card-body">
+        <div class="row2">
+          <button class="add-btn" id="exportBackup">匯出備份</button>
+          <button class="add-btn" id="importBackupBtn">匯入備份</button>
+        </div>
+        <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -710,7 +797,7 @@
   var entries = loadJSON(STORAGE_ENTRIES, {});
   var inbody = loadJSON(STORAGE_INBODY, {});
   var goal = loadJSON(STORAGE_GOAL, null);
-  var defaultAppearance = { appName: "飲食紀錄", iconEmoji: "🍽" };
+  var defaultAppearance = { appName: "飲食紀錄", iconEmoji: "🍽", theme: "sand" };
   var appearance = loadJSON(STORAGE_APPEARANCE, defaultAppearance);
   var presets = loadJSON(STORAGE_PRESETS, []);
 
@@ -752,16 +839,18 @@
     };
   }
 
+  var THEME_COLORS = { sand:"#204654", lavender:"#4A3B6B", ocean:"#0B3D5C", peach:"#7A4A3A" };
+
   // Rasterizes an emoji onto a rounded-square PNG, since iOS only accepts a real
   // image (not SVG) for the "Add to Home Screen" icon.
-  function buildIconDataUri(emoji){
+  function buildIconDataUri(emoji, bgColor){
     var size = 180;
     var canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
     var ctx = canvas.getContext("2d");
     var r = 40;
-    ctx.fillStyle = "#204654";
+    ctx.fillStyle = bgColor || THEME_COLORS.sand;
     ctx.beginPath();
     ctx.moveTo(r, 0);
     ctx.arcTo(size, 0, size, size, r);
@@ -780,14 +869,26 @@
   function applyAppearance(){
     document.getElementById("pageTitle").textContent = appearance.appName;
     document.querySelector("header.top .title").textContent = appearance.appName;
-    var iconUri = buildIconDataUri(appearance.iconEmoji);
+    var theme = appearance.theme || "sand";
+    document.documentElement.setAttribute("data-theme", theme);
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", THEME_COLORS[theme] || THEME_COLORS.sand);
+    var iconUri = buildIconDataUri(appearance.iconEmoji, THEME_COLORS[theme]);
     document.getElementById("faviconLink").href = iconUri;
     document.getElementById("appleTouchIcon").href = iconUri;
+  }
+
+  var selectedTheme = "sand";
+  function markSelectedThemeSwatch(){
+    document.querySelectorAll(".theme-swatch").forEach(function(btn){
+      btn.classList.toggle("selected", btn.dataset.theme === selectedTheme);
+    });
   }
 
   function fillSettingsForm(){
     document.getElementById("s_appname").value = appearance.appName;
     document.getElementById("s_iconemoji").value = appearance.iconEmoji;
+    selectedTheme = appearance.theme || "sand";
+    markSelectedThemeSwatch();
     document.getElementById("s_weight").value = profile.weight;
     document.getElementById("s_height").value = profile.height;
     document.getElementById("s_age").value = profile.age;
@@ -1311,16 +1412,31 @@
   });
 
   // Appearance save
+  document.querySelectorAll(".theme-swatch").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      selectedTheme = btn.dataset.theme;
+      markSelectedThemeSwatch();
+    });
+  });
+
   document.getElementById("saveAppearance").addEventListener("click", function(){
     var name = document.getElementById("s_appname").value.trim();
     var emoji = document.getElementById("s_iconemoji").value.trim();
     appearance = {
       appName: name || defaultAppearance.appName,
-      iconEmoji: emoji || defaultAppearance.iconEmoji
+      iconEmoji: emoji || defaultAppearance.iconEmoji,
+      theme: selectedTheme
     };
     saveJSON(STORAGE_APPEARANCE, appearance);
     applyAppearance();
     fillSettingsForm();
+  });
+
+  // Settings sections collapse independently, like the 日誌 tab's day-cards.
+  document.querySelectorAll("#view-settings .day-card-head").forEach(function(head){
+    head.addEventListener("click", function(){
+      head.parentElement.classList.toggle("open");
+    });
   });
 
   // Settings save
